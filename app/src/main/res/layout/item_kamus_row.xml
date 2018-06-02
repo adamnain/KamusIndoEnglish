@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+
+    <android.support.v7.widget.CardView
+        android:layout_margin="@dimen/margin_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <LinearLayout
+            android:layout_margin="4dp"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:textSize="@dimen/textSize_word"
+                android:textStyle="bold"
+                android:id="@+id/txt_kata"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/kata"/>
+            <TextView
+                android:id="@+id/txt_arti"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/arti"/>
+        </LinearLayout>
+    </android.support.v7.widget.CardView>
+
+</LinearLayout>
