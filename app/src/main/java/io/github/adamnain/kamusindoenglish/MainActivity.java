@@ -1,5 +1,6 @@
 package io.github.adamnain.kamusindoenglish;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.AsyncTask;
@@ -105,18 +106,8 @@ public class MainActivity extends AppCompatActivity
             transaction.commit();
 
         } else if (id == R.id.nav_slideshow) {
-            IndoEnglishFragment newFragment = new IndoEnglishFragment();
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.replace(R.id.content_frame, newFragment);
-            transaction.addToBackStack(null);
-            transaction.commit();
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+            finish();
+            System.exit(0);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -125,7 +116,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void initFragMain(){
-        IndoEnglishFragment newFragment = new IndoEnglishFragment();
+        EnglishIndoFragment newFragment = new EnglishIndoFragment();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.content_frame, newFragment);
         transaction.addToBackStack(null);
