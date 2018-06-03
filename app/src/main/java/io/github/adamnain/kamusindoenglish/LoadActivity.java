@@ -2,11 +2,13 @@ package io.github.adamnain.kamusindoenglish;
 
 import android.content.Intent;
 import android.content.res.Resources;
+import android.database.SQLException;
 import android.os.AsyncTask;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ProgressBar;
 
 import java.io.BufferedReader;
@@ -36,98 +38,56 @@ public class LoadActivity extends AppCompatActivity {
     Asynctask untuk menjalankan preload data
      */
     private class LoadData extends AsyncTask<Void, Integer, Void> {
-        final String TAG = LoadData.class.getSimpleName();
         KamusHelper kamusHelper;
         AppPreference appPreference;
         double progress;
         double maxprogress = 100;
 
-        /*
-        Persiapan sebelum proses dimulai
-        Berjalan di Main Thread
-         */
         @Override
         protected void onPreExecute() {
-
             kamusHelper = new KamusHelper(LoadActivity.this);
             appPreference = new AppPreference(LoadActivity.this);
         }
 
-        /*
-        Proses background terjadi di method doInBackground
-         */
+        @SuppressWarnings("WrongThread")
         @Override
         protected Void doInBackground(Void... params) {
-
-            /*
-            Panggil preference first run
-             */
             Boolean firstRun = appPreference.getFirstRun();
-
-            /*
-            Jika first run true maka melakukan proses pre load,
-            jika first run false maka akan langsung menuju home
-             */
             if (firstRun) {
-                /*
-                Load raw data dari file txt ke dalam array model mahasiswa
-                 */
                 ArrayList<KamusModel> kamusEnglish = preLoadRaw(R.raw.english_indonesia);
                 ArrayList<KamusModel> kamusIndonesia = preLoadRaw(R.raw.indonesia_english);
 
-
-                kamusHelper.open();
-
-                progress = 30;
                 publishProgress((int) progress);
-                Double progressMaxInsert = 80.0;
-                Double progressDiff = (progressMaxInsert - progress) / (kamusEnglish.size()+kamusIndonesia.size());
-
-
-                /*
-                Gunakan ini untuk query insert yang transactional
-                 */
-                kamusHelper.beginTransaction();
 
                 try {
-                    for (KamusModel model : kamusEnglish) {
-                        kamusHelper.insertTransaction(model);
-                        progress += progressDiff;
-                        publishProgress((int) progress);
-                    }
-                    for (KamusModel model : kamusIndonesia) {
-                        kamusHelper.insertTransaction(model);
-                        progress += progressDiff;
-                        publishProgress((int) progress);
-                    }
-
-                    // Jika semua proses telah di set success maka akan di commit ke database
-                    kamusHelper.setTransactionSuccess();
-                } catch (Exception e) {
-                    // Jika gagal maka do nothing
-                    Log.e(TAG, "doInBackground: Exception");
+                    kamusHelper.open();
+                } catch (SQLException e) {
+                    e.printStackTrace();
                 }
-                kamusHelper.endTransaction();
 
-                // Close helper ketika proses query sudah selesai
+                Double progressMaxInsert = 100.0;
+                Double progressDiff = (progressMaxInsert - progress) / (kamusEnglish.size() + kamusIndonesia.size());
+
+                kamusHelper.insertTransaction(kamusEnglish, true);
+                progress += progressDiff;
+                publishProgress((int) progress);
+
+                kamusHelper.insertTransaction(kamusIndonesia, false);
+                progress += progressDiff;
+                publishProgress((int) progress);
+
                 kamusHelper.close();
-
-                /*
-                Set preference first run ke false
-                Agar proses preload tidak dijalankan untuk kedua kalinya
-                */
                 appPreference.setFirstRun(false);
 
                 publishProgress((int) maxprogress);
-
             } else {
+                //tv_load.setVisibility(View.INVISIBLE);
                 try {
                     synchronized (this) {
-                        this.wait(2000);
-
+                        this.wait(1000);
                         publishProgress(50);
 
-                        this.wait(2000);
+                        this.wait(300);
                         publishProgress((int) maxprogress);
                     }
                 } catch (Exception e) {
@@ -136,51 +96,40 @@ public class LoadActivity extends AppCompatActivity {
             return null;
         }
 
-        //Update prosesnya
         @Override
         protected void onProgressUpdate(Integer... values) {
             progressBar.setProgress(values[0]);
         }
 
-        /*
-        Setelah proses selesai
-        Berjalan di Main Thread
-        */
         @Override
         protected void onPostExecute(Void result) {
-            Intent i = new Intent(getApplicationContext(), MainActivity.class);
+            Intent i = new Intent(LoadActivity.this, MainActivity.class);
             startActivity(i);
+
+            finish();
         }
     }
 
-    /**
-     * Parsing raw data text berupa data menjadi array mahasiswa
-     *
-     * @return array model dari semua mahasiswa
-     */
     public ArrayList<KamusModel> preLoadRaw(int data) {
         ArrayList<KamusModel> kamusModels = new ArrayList<>();
-        String line = null;
         BufferedReader reader;
         try {
             Resources res = getResources();
             InputStream raw_dict = res.openRawResource(data);
 
             reader = new BufferedReader(new InputStreamReader(raw_dict));
-            int count = 0;
+            String line = null;
             do {
                 line = reader.readLine();
                 String[] splitstr = line.split("\t");
-
                 KamusModel kamusModel;
-
                 kamusModel = new KamusModel(splitstr[0], splitstr[1]);
                 kamusModels.add(kamusModel);
-                count++;
             } while (line != null);
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         return kamusModels;
     }
 }

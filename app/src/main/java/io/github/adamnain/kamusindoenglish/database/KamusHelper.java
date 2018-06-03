@@ -139,42 +139,34 @@ public class KamusHelper {
         database.endTransaction();
     }
 
-    /**
-     * Gunakan method ini untuk query insert di dalam transaction
-     * @param mahasiswaModel inputan model mahasiswa
-     */
-    public void insertTransaction(KamusModel kamusEnglish){
-        String sql = "INSERT INTO "+TABLE_ENGLISH+" ("+KATA+", "+ARTI
+
+    public void insertTransaction(ArrayList<KamusModel> kamusModels, boolean english){
+        String table = "";
+        if (!english){
+            table = TABLE_INDONESIA;
+        }
+        else{
+            table = TABLE_ENGLISH;
+        }
+
+
+        String sql = "INSERT INTO "+table+" ("+KATA+", "+ARTI
                 +") VALUES (?, ?)";
 
+        database.beginTransaction();
+
         SQLiteStatement stmt = database.compileStatement(sql);
-        stmt.bindString(1, kamusEnglish.getKata());
-        stmt.bindString(2, kamusEnglish.getArti());
+        for (int i = 0; i < kamusModels.size(); i++) {
+            stmt.bindString(1, kamusModels.get(i).getKata());
+            stmt.bindString(2, kamusModels.get(i).getArti());
+            stmt.execute();
+            stmt.clearBindings();
+        }
 
-        stmt.execute();
-        stmt.clearBindings();
+        database.setTransactionSuccessful();
+        database.endTransaction();
 
     }
 
-    /**
-     * Gunakan method ini untuk update data mahasiswa yang ada di dalam database
-     * @param mahasiswaModel inputan model mahasiswa
-     * @return jumlah mahasiswa yang ter-update
-     */
-    public int update(KamusModel kamusModel){
-        ContentValues args = new ContentValues();
-        args.put(KATA, kamusModel.getKata());
-        args.put(ARTI, kamusModel.getArti());
-        return database.update(TABLE_ENGLISH, args, _ID + "= '" + kamusModel.getId() + "'", null);
-    }
 
-
-    /**
-     * Gunakan method ini untuk menghapus data mahasiswa yang ada di dalam database
-     * @param id id mahasiswa yang akan di hapus
-     * @return jumlah mahasiswa yang di-delete
-     */
-    public int delete(int id){
-        return database.delete(TABLE_ENGLISH, _ID + " = '"+id+"'", null);
-    }
 }
