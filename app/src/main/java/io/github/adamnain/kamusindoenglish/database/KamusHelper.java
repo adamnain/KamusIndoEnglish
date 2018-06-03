@@ -15,6 +15,7 @@ import static android.provider.BaseColumns._ID;
 import static io.github.adamnain.kamusindoenglish.database.DatabaseContract.MahasiswaColumns.ARTI;
 import static io.github.adamnain.kamusindoenglish.database.DatabaseContract.MahasiswaColumns.KATA;
 import static io.github.adamnain.kamusindoenglish.database.DatabaseContract.TABLE_ENGLISH;
+import static io.github.adamnain.kamusindoenglish.database.DatabaseContract.TABLE_INDONESIA;
 
 public class KamusHelper {
     private Context context;
@@ -41,10 +42,16 @@ public class KamusHelper {
      * @param nama nama yang dicari
      * @return NIM dari mahasiswa
      */
-    public ArrayList<KamusModel> getDataByKata(String kata){
-        String result = "";
-        //Cursor cursor = database.query(TABLE_ENGLISH,null,KATA+" LIKE ?",new String[]{kata},null,null,"id" + " ASC",null);
-        Cursor cursor = database.rawQuery("SELECT * FROM "+TABLE_ENGLISH+" WHERE KATA LIKE '"+kata+"%'", null);
+    public ArrayList<KamusModel> getDataByKata(String kata, boolean english){
+        String table = "";
+        if (!english){
+            table = TABLE_INDONESIA;
+        }
+        else {
+            table = TABLE_ENGLISH;
+        }
+
+        Cursor cursor = database.rawQuery("SELECT * FROM "+table+" WHERE KATA LIKE '"+kata+"%'", null);
         cursor.moveToFirst();
         ArrayList<KamusModel> arrayList = new ArrayList<>();
         KamusModel kamusModel;
@@ -68,8 +75,16 @@ public class KamusHelper {
      * Gunakan method ini untuk mendapatkan semua data mahasiswa
      * @return hasil query mahasiswa model di dalam arraylist
      */
-    public ArrayList<KamusModel> getAllData(){
-        Cursor cursor = database.query(TABLE_ENGLISH,null,null,null,null,null,"id"+ " ASC",null);
+    public ArrayList<KamusModel> getAllData(boolean english){
+        String table = "";
+        if (!english){
+            table = TABLE_INDONESIA;
+        }
+        else {
+            table = TABLE_ENGLISH;
+        }
+
+        Cursor cursor = database.query(table,null,null,null,null,null,"id"+ " ASC",null);
         cursor.moveToFirst();
         ArrayList<KamusModel> arrayList = new ArrayList<>();
         KamusModel kamusModel;
@@ -128,12 +143,14 @@ public class KamusHelper {
      * Gunakan method ini untuk query insert di dalam transaction
      * @param mahasiswaModel inputan model mahasiswa
      */
-    public void insertTransaction(KamusModel kamusModel){
+    public void insertTransaction(KamusModel kamusEnglish){
         String sql = "INSERT INTO "+TABLE_ENGLISH+" ("+KATA+", "+ARTI
                 +") VALUES (?, ?)";
+
         SQLiteStatement stmt = database.compileStatement(sql);
-        stmt.bindString(1, kamusModel.getKata());
-        stmt.bindString(2, kamusModel.getArti());
+        stmt.bindString(1, kamusEnglish.getKata());
+        stmt.bindString(2, kamusEnglish.getArti());
+
         stmt.execute();
         stmt.clearBindings();
 

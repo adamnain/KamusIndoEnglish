@@ -5,7 +5,7 @@ import android.provider.BaseColumns;
 public class DatabaseContract {
 
     static String TABLE_ENGLISH = "english";
-    static String TABLE_INDONESIA = "english";
+    static String TABLE_INDONESIA = "indonesia";
 
     static final class MahasiswaColumns implements BaseColumns {
 

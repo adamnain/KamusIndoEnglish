@@ -72,14 +72,16 @@ public class LoadActivity extends AppCompatActivity {
                 /*
                 Load raw data dari file txt ke dalam array model mahasiswa
                  */
-                ArrayList<KamusModel> mahasiswaModels = preLoadRaw();
+                ArrayList<KamusModel> kamusEnglish = preLoadRaw(R.raw.english_indonesia);
+                ArrayList<KamusModel> kamusIndonesia = preLoadRaw(R.raw.indonesia_english);
+
 
                 kamusHelper.open();
 
                 progress = 30;
                 publishProgress((int) progress);
                 Double progressMaxInsert = 80.0;
-                Double progressDiff = (progressMaxInsert - progress) / mahasiswaModels.size();
+                Double progressDiff = (progressMaxInsert - progress) / (kamusEnglish.size()+kamusIndonesia.size());
 
 
                 /*
@@ -88,11 +90,17 @@ public class LoadActivity extends AppCompatActivity {
                 kamusHelper.beginTransaction();
 
                 try {
-                    for (KamusModel model : mahasiswaModels) {
+                    for (KamusModel model : kamusEnglish) {
                         kamusHelper.insertTransaction(model);
                         progress += progressDiff;
                         publishProgress((int) progress);
                     }
+                    for (KamusModel model : kamusIndonesia) {
+                        kamusHelper.insertTransaction(model);
+                        progress += progressDiff;
+                        publishProgress((int) progress);
+                    }
+
                     // Jika semua proses telah di set success maka akan di commit ke database
                     kamusHelper.setTransactionSuccess();
                 } catch (Exception e) {
@@ -100,15 +108,6 @@ public class LoadActivity extends AppCompatActivity {
                     Log.e(TAG, "doInBackground: Exception");
                 }
                 kamusHelper.endTransaction();
-
-                /*
-                Gunakan ini untuk insert query dengan menggunakan standar query
-                 */
-//                for (MahasiswaModel model : mahasiswaModels) {
-//                    mahasiswaHelper.insert(model);
-//                    progress += progressDiff;
-//                    publishProgress((int)progress);
-//                }
 
                 // Close helper ketika proses query sudah selesai
                 kamusHelper.close();
@@ -159,13 +158,13 @@ public class LoadActivity extends AppCompatActivity {
      *
      * @return array model dari semua mahasiswa
      */
-    public ArrayList<KamusModel> preLoadRaw() {
-        ArrayList<KamusModel> mahasiswaModels = new ArrayList<>();
+    public ArrayList<KamusModel> preLoadRaw(int data) {
+        ArrayList<KamusModel> kamusModels = new ArrayList<>();
         String line = null;
         BufferedReader reader;
         try {
             Resources res = getResources();
-            InputStream raw_dict = res.openRawResource(R.raw.english_indonesia);
+            InputStream raw_dict = res.openRawResource(data);
 
             reader = new BufferedReader(new InputStreamReader(raw_dict));
             int count = 0;
@@ -173,15 +172,15 @@ public class LoadActivity extends AppCompatActivity {
                 line = reader.readLine();
                 String[] splitstr = line.split("\t");
 
-                KamusModel mahasiswaModel;
+                KamusModel kamusModel;
 
-                mahasiswaModel = new KamusModel(splitstr[0], splitstr[1]);
-                mahasiswaModels.add(mahasiswaModel);
+                kamusModel = new KamusModel(splitstr[0], splitstr[1]);
+                kamusModels.add(kamusModel);
                 count++;
             } while (line != null);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return mahasiswaModels;
+        return kamusModels;
     }
 }

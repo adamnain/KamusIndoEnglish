@@ -26,7 +26,7 @@ import io.github.adamnain.kamusindoenglish.model.KamusModel;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class EnglishIndoFragment extends Fragment implements MaterialSearchBar.OnSearchActionListener {
+public class EnglishIndoFragment extends Fragment  {
 
 
     @BindView(R.id.recyclerview)
@@ -64,7 +64,7 @@ public class EnglishIndoFragment extends Fragment implements MaterialSearchBar.O
             public boolean onQueryTextSubmit(String query) {
                 Toast.makeText(getActivity(), query, Toast.LENGTH_SHORT).show();
                 kamusHelper.open();
-                ArrayList<KamusModel> list = kamusHelper.getDataByKata(String.valueOf(query));
+                ArrayList<KamusModel> list = kamusHelper.getDataByKata(String.valueOf(query), true);
                 kamusHelper.close();
 
                 kamusAdapter.replaceAll(list);
@@ -83,7 +83,7 @@ public class EnglishIndoFragment extends Fragment implements MaterialSearchBar.O
         kamusHelper.open();
 
         // Ambil semua data mahasiswa di database
-        ArrayList<KamusModel> mahasiswaModels = kamusHelper.getAllData();
+        ArrayList<KamusModel> mahasiswaModels = kamusHelper.getAllData(true);
 
         kamusHelper.close();
 
@@ -92,26 +92,4 @@ public class EnglishIndoFragment extends Fragment implements MaterialSearchBar.O
         return v;
     }
 
-    @Override
-    public void onSearchStateChanged(boolean enabled) {
-
-    }
-
-    @Override
-    public void onSearchConfirmed(CharSequence text) {
-        Toast.makeText(getActivity(), text, Toast.LENGTH_SHORT).show();
-        kamusHelper.open();
-        ArrayList<KamusModel> list = kamusHelper.getDataByKata(String.valueOf(text));
-        kamusHelper.close();
-
-        kamusAdapter.replaceAll(list);
-        //recyclerView.setAdapter(kamusAdapter);
-        kamusAdapter.notifyDataSetChanged();
-
-    }
-
-    @Override
-    public void onButtonClicked(int buttonCode) {
-
-    }
 }
